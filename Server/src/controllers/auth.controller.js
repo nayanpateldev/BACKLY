@@ -5,7 +5,7 @@ import { successResponse, errorResponse } from "../utils/response.js";
 
 const authControllers = {
   // Signup
-  handleSignup: async (req, res, next) => {
+  handleSignup: async (req, res) => {
     try {
       logs(`${METHODS.POST}${ENDPOINTS.SIGNUP} - Request Recieved`);
       const data = req.body;
@@ -17,7 +17,7 @@ const authControllers = {
     }
   },
   // Login
-  handleLogin: async (req, res, next) => {
+  handleLogin: async (req, res) => {
     try {
       logs(`${METHODS.POST}${ENDPOINTS.LOGIN} - Request Recieved`);
       const data = req.body;
@@ -29,7 +29,7 @@ const authControllers = {
     }
   },
   // Current User
-  handleMe: async (req, res, next) => {
+  handleMe: async (req, res) => {
     try {
       logs(`${METHODS.GET}${ENDPOINTS.GET_USER} - Request Received`);
 
@@ -43,7 +43,7 @@ const authControllers = {
     }
   },
   // Logout
-  handleLogout: async (req, res, next) => {
+  handleLogout: async (req, res) => {
     try {
       logs(`${METHODS.POST}${ENDPOINTS.LOGOUT} - Request Received`);
 
