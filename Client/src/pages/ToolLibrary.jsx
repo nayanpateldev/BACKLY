@@ -7,7 +7,7 @@ function ToolLibrary({ tools, query }) {
         <span className="intro-orb" />
         <div>
           <p className="eyebrow">TOOL PLAYGROUND</p>
-          <h2>Everything you need,<br />in one place.</h2>
+          <h2>Everything you need,<br />in <span className="highlight">one place.</span></h2>
           <p className="intro-copy">A focused collection of practical tools for exploring backend fundamentals.</p>
         </div>
       </div>

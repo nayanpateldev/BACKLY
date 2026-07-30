@@ -4,6 +4,8 @@ import './App.scss'
 import BACKLYLogo from './assets/BACKLY.webp'
 import ToolLibrary from './pages/ToolLibrary.jsx'
 import ToolPage from './pages/ToolPage.jsx'
+import Signup from './pages/Signup.jsx'
+import Login from './pages/Login.jsx'
 
 const tools = [
   { id: 'ip-geo', name: 'My IP + Geo', description: 'Find your public IP address and geographic details.', icon: '◎', tag: 'Network' },
@@ -64,7 +66,10 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
+    <Routes location={location}>
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="*" element={<div className="app-shell">
       <aside className="sidebar">
         <NavLink className="brand brand-link" to="/">
           <span className="brand-mark">
@@ -113,6 +118,7 @@ function App() {
             />
             <kbd>⌘ K</kbd>
           </div>
+          <NavLink className="signup-link" to="/signup">Create account</NavLink>
         </header>
 
         <main className="main-content">
@@ -124,8 +130,8 @@ function App() {
         </main>
 
         <footer>© 2026 BACKLY. All Rights Reserved.</footer>
-      </div>
-    </div>
+      </div></div>} />
+    </Routes>
   )
 }
 

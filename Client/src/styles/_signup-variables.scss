@@ -1,0 +1,20 @@
+$signup-bg: #000;
+$signup-panel: #0a0a0a;
+$signup-border: #262626;
+$signup-surface: #111;
+$signup-surface-border: #2a2a2a;
+$signup-primary: #7c3aed;
+$signup-primary-soft: rgba(124, 58, 237, 0.12);
+$signup-primary-border: rgba(124, 58, 237, 0.35);
+$signup-text: #fafafa;
+$signup-secondary: #a1a1aa;
+$signup-muted: #71717a;
+$signup-placeholder: #52525b;
+$signup-danger: #f87171;
+$signup-danger-soft: rgba(248, 113, 113, 0.1);
+$signup-link: #a78bfa;
+$signup-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+$signup-glow: radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 70%);
+$signup-panel-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 20px 60px rgba(0, 0, 0, 0.6);
+$signup-primary-shadow: 0 0 0 4px $signup-primary-soft;
+
