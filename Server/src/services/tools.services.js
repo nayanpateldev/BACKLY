@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import validator from "validator";
 import { supabase } from "../config/supabase.js";
 import { formatUrl } from "../utils/url.js";
+import QRCode from "qrcode";
 
 const toolServices = {
   // URL Shortner
@@ -111,8 +112,39 @@ const toolServices = {
 
     return formatUrl(data);
   },
+  // Generates a QR Code for a given URL
+  generateUrlQr: async (req) => {
+    const { url } = req.body;
+
+    const qr = await QRCode.toDataURL(url);
+
+    return {
+      qr,
+    };
+  },
+  // Generates a QR Code for a given UPI ID
+  generateUpiQr: async (req) => {
+    const { upiId, name, amount, note } = req.body;
+
+    let upiUrl = `upi://pay?pa=${encodeURIComponent(
+      upiId,
+    )}&pn=${encodeURIComponent(name)}&cu=INR`;
+
+    if (amount) {
+      upiUrl += `&am=${amount}`;
+    }
+
+    if (note) {
+      upiUrl += `&tn=${encodeURIComponent(note)}`;
+    }
+
+    const qr = await QRCode.toDataURL(upiUrl);
+
+    return {
+      qr,
+    };
+  },
   pasteBin: async () => {},
-  qr: async () => {},
   fileShare: async () => {},
   authKit: async () => {},
 };

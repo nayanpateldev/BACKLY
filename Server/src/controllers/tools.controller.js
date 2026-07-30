@@ -51,8 +51,37 @@ const toolControllers = {
       return errorResponse(res, 500, error.message);
     }
   },
+  // Generates a QR Code for a given URL
+  generateUrlQr: async (req, res) => {
+  try {
+    const data = await toolServices.generateUrlQr(req);
+
+    return successResponse(
+      res,
+      200,
+      "QR Code generated successfully",
+      data
+    );
+  } catch (error) {
+    return errorResponse(res, 500, error.message);
+  }
+},
+// Generates a QR Code for a given UPI ID
+generateUpiQr: async (req, res) => {
+  try {
+    const data = await toolServices.generateUpiQr(req);
+
+    return successResponse(
+      res,
+      200,
+      "UPI QR generated successfully",
+      data
+    );
+  } catch (error) {
+    return errorResponse(res, 500, error.message);
+  }
+},
   pasteBin: async () => {},
-  qr: async () => {},
   fileShare: async () => {},
   authKit: async () => {},
 };
