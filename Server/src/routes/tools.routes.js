@@ -2,7 +2,11 @@ import { Router } from "express";
 import toolControllers from "../controllers/tools.controller.js";
 import authenticate from "../middleware/auth.middleware.js";
 import validate from "../middleware/validate.middleware.js";
-import { generateUrlQrSchema, generateUpiQrSchema } from "../utils/qr.validation.js";
+import {
+  generateUrlQrSchema,
+  generateUpiQrSchema,
+} from "../utils/qr.validation.js";
+import { jwtSecretSchema, jwtDecodeSchema, jwtEncodeSchema} from "../utils/jwt.validations.js";
 
 const toolRouter = Router();
 
@@ -37,6 +41,33 @@ toolRouter.post("/fileShare", toolControllers.fileShare);
 
 // #################  Tool No. 5 #####################
 // AuthKit Endpoints
-toolRouter.post("/authKit", toolControllers.authKit);
+
+// Password Generator
+toolRouter.post(
+  "/authKit/password/generate",
+  authenticate,
+  toolControllers.generatePassword,
+);
+toolRouter.post(
+  "/authKit/password/strength",
+  authenticate,
+  toolControllers.passwordStrength,
+);
+
+// JWT Toolkit
+toolRouter.post(
+  "/authKit/jwt/secret",
+  authenticate, validate(jwtSecretSchema),
+  toolControllers.generateJwtSecret,
+);
+toolRouter.post(
+  "/authKit/jwt/decode",
+  authenticate,
+  validate(jwtDecodeSchema),
+  toolControllers.decodeJwt,
+);
+toolRouter.post("/authKit/jwt/encode", authenticate, validate(jwtEncodeSchema), toolControllers.encodeJwt);
+
+
 
 export default toolRouter;

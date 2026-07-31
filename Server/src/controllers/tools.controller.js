@@ -53,37 +53,94 @@ const toolControllers = {
   },
   // Generates a QR Code for a given URL
   generateUrlQr: async (req, res) => {
-  try {
-    const data = await toolServices.generateUrlQr(req);
+    try {
+      const data = await toolServices.generateUrlQr(req);
 
-    return successResponse(
-      res,
-      200,
-      "QR Code generated successfully",
-      data
-    );
-  } catch (error) {
-    return errorResponse(res, 500, error.message);
-  }
-},
-// Generates a QR Code for a given UPI ID
-generateUpiQr: async (req, res) => {
-  try {
-    const data = await toolServices.generateUpiQr(req);
+      return successResponse(res, 200, "QR Code generated successfully", data);
+    } catch (error) {
+      return errorResponse(res, 500, error.message);
+    }
+  },
+  // Generates a QR Code for a given UPI ID
+  generateUpiQr: async (req, res) => {
+    try {
+      const data = await toolServices.generateUpiQr(req);
 
-    return successResponse(
-      res,
-      200,
-      "UPI QR generated successfully",
-      data
-    );
-  } catch (error) {
-    return errorResponse(res, 500, error.message);
-  }
-},
+      return successResponse(res, 200, "UPI QR generated successfully", data);
+    } catch (error) {
+      return errorResponse(res, 500, error.message);
+    }
+  },
+  // Password Generator
+  generatePassword: async (req, res) => {
+    try {
+      const data = await toolServices.generatePassword(req);
+
+      return successResponse(res, 200, "Password generated successfully", data);
+    } catch (error) {
+      return errorResponse(res, 500, error.message);
+    }
+  },
+  // Password Strength Checker
+  passwordStrength: async (req, res) => {
+    try {
+      const data = await toolServices.passwordStrength(req);
+
+      return successResponse(
+        res,
+        200,
+        "Password strength checked successfully",
+        data,
+      );
+    } catch (error) {
+      return errorResponse(res, 500, error.message);
+    }
+  },
+  // JWT Secret Generator
+  generateJwtSecret: async (req, res) => {
+    try {
+      const data = await toolServices.generateJwtSecret(req);
+
+      return successResponse(
+        res,
+        200,
+        "JWT secret generated successfully",
+        data,
+      );
+    } catch (error) {
+      return errorResponse(
+        res,
+        500,
+        error.message || "Failed to generate JWT secret.",
+      );
+    }
+  },
+  // JWT Decoder
+  decodeJwt: async (req, res) => {
+    try {
+      const data = await toolServices.decodeJwt(req);
+
+      return successResponse(res, 200, "JWT decoded successfully", data);
+    } catch (error) {
+      return errorResponse(res, 400, error.message || "Failed to decode JWT.");
+    }
+  },
+  // JWT Encoder
+  encodeJwt: async (req, res) => {
+    try {
+      const data = await toolServices.encodeJwt(req);
+
+      return successResponse(res, 200, "JWT generated successfully", data);
+    } catch (error) {
+      return errorResponse(
+        res,
+        400,
+        error.message || "Failed to generate JWT.",
+      );
+    }
+  },
   pasteBin: async () => {},
   fileShare: async () => {},
-  authKit: async () => {},
 };
 
 export default toolControllers;

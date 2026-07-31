@@ -21,7 +21,6 @@ function ToolLibrary({ tools, query }) {
               <span className="tool-card-title">{tool.name}</span>
               <span>{tool.description}</span>
             </span>
-            <span className="tool-tag">{tool.tag}</span>
             <span className="arrow">→</span>
           </Link>
         ))}
