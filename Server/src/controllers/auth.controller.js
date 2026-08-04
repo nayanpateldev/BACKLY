@@ -9,11 +9,32 @@ const authControllers = {
     try {
       logs(`${METHODS.POST}${ENDPOINTS.SIGNUP} - Request Recieved`);
       const data = req.body;
-      const user = await authServices.Signup(data);
+      const result = await authServices.Signup(data);
       logs(`${METHODS.POST}${ENDPOINTS.SIGNUP} - Request Ended`);
-      return successResponse(res, 201, "User created successfully", user);
+
+      res.cookie("accessToken", result.session.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: result.session.expiresIn * 1000,
+      });
+
+      res.cookie("refreshToken", result.session.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+
+      delete result.session;
+
+      return successResponse(res, 201, "User created successfully", result);
     } catch (error) {
-      return errorResponse(res, error.status || 500, error.message || "Internal Server Error");
+      return errorResponse(
+        res,
+        error.status || 500,
+        error.message || "Internal Server Error",
+      );
     }
   },
   // Login
@@ -23,9 +44,29 @@ const authControllers = {
       const data = req.body;
       const authData = await authServices.Login(data);
       logs(`${METHODS.POST}${ENDPOINTS.LOGIN} - Request Ended`);
+      res.cookie("accessToken", authData.session.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: authData.session.expiresIn * 1000,
+      });
+
+      res.cookie("refreshToken", authData.session.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+
+      delete authData.session;
+
       return successResponse(res, 201, "User logged in successfully", authData);
     } catch (error) {
-      return errorResponse(res, error.status || 500, error.message || "Internal Server Error");
+      return errorResponse(
+        res,
+        error.status || 500,
+        error.message || "Internal Server Error",
+      );
     }
   },
   // Current User
@@ -39,7 +80,11 @@ const authControllers = {
 
       return successResponse(res, 200, "User fetched successfully", user);
     } catch (error) {
-      return errorResponse(res, error.status || 500, error.message || "Internal Server Error");
+      return errorResponse(
+        res,
+        error.status || 500,
+        error.message || "Internal Server Error",
+      );
     }
   },
   // Logout
@@ -47,21 +92,41 @@ const authControllers = {
     try {
       logs(`${METHODS.POST}${ENDPOINTS.LOGOUT} - Request Received`);
 
-      const token = req.token;
+      const bearerToken = req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.slice(7)
+        : null;
+      const token = bearerToken || req.cookies?.accessToken;
 
-      const user = {
-        id: req.user.id,
-        email: req.user.email,
-        fullName: req.user.user_metadata.full_name,
-      };
+      // Server-side revocation is best effort. Cookie clearing must still work
+      // when a session has already expired or the token is malformed.
+      if (token) {
+        try {
+          await authServices.Logout(token);
+        } catch (error) {
+          logs(`${METHODS.POST}${ENDPOINTS.LOGOUT} - ${error.message}`, "WARN");
+        }
+      }
 
-      await authServices.Logout(token);
+      res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
 
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
       logs(`${METHODS.POST}${ENDPOINTS.LOGOUT} - Request Ended`);
 
-      return successResponse(res, 200, "User logged out successfully", user);
+      return successResponse(res, 200, "User logged out successfully");
     } catch (error) {
-      return errorResponse(res, error.status || 500, error.message || "Internal Server Error");
+      return errorResponse(
+        res,
+        error.status || 500,
+        error.message || "Internal Server Error",
+      );
     }
   },
 };

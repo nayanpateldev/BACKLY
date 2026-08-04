@@ -3,6 +3,8 @@ import { Code2, Eye, EyeOff, Lock, LogIn, Mail, ShieldCheck, Zap } from 'lucide-
 import toolbox from '../assets/toolbox.webp'
 import backlyLogo from '../assets/BACKLY.webp'
 import './Signup.scss'
+import authApi from '../api/auth'
+import { useNavigate } from 'react-router-dom'
 
 const initialValues = { email: '', password: '' }
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -67,21 +69,25 @@ function PromoPanel() {
 export default function Login() {
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
+  const [serverError, setServerError] = useState('')
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const navigate = useNavigate()
 
   const update = (field) => (event) => {
     const value = event.target.value
     setValues((previous) => ({ ...previous, [field]: value }))
+    setServerError('')
     if (hasSubmitted) {
       setErrors((current) => ({ ...current, [field]: validateField(field, value) }))
     }
   }
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault()
     setHasSubmitted(true)
+    setServerError('')
     const nextErrors = Object.fromEntries(
       Object.entries(values)
         .map(([key, value]) => [key, validateField(key, value)])
@@ -90,13 +96,24 @@ export default function Login() {
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length) return
     setIsSubmitting(true)
-    window.setTimeout(() => {
+
+    try {
+      await authApi.login({
+        email: values.email.trim(),
+        password: values.password,
+      })
+
       setIsSubmitting(false)
       setSubmitted(true)
-    }, 1200)
+      navigate('/home')
+    } catch (error) {
+      setServerError(error.response?.data?.message || '')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const input = (props) => <InputField {...props} value={values[props.id]} onChange={update(props.id)} error={hasSubmitted ? errors[props.id] : ''} />
 
-  return <div className="signup-page"><div className="signup"><PromoPanel /><section className="signup__panel"><div className="signup__card">{submitted ? <div className="signup__success"><span><LogIn size={28} /></span><h2>Welcome back</h2><p>You’re signed in and ready to continue.</p></div> : <><header><h2>Welcome back</h2><p>Sign in to your BACKLY workspace.</p></header><form onSubmit={submit} noValidate>{input({ id: 'email', label: 'Email Address', icon: Mail, type: 'email', placeholder: 'Enter your email address' })}{input({ id: 'password', label: 'Password', icon: Lock, isPassword: true, placeholder: 'Enter your password' })}<button className="signup-button" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Signing in…' : <><LogIn size={18} />Log in</>}</button><div className="signup__divider">OR</div><button className="signup-button signup-button--secondary" type="button"><GoogleIcon size={18} />Sign in with Google</button></form><p className="signup__footer">Don&apos;t have an account? <a href="/signup">Create one</a></p></>}</div></section></div></div>
+  return <div className="signup-page"><div className="signup"><PromoPanel /><section className="signup__panel"><div className="signup__card">{submitted ? <div className="signup__success"><span><LogIn size={28} /></span><h2>Welcome back</h2><p>You’re signed in and ready to continue.</p></div> : <><header><h2>Welcome back</h2><p>Sign in to your BACKLY workspace.</p></header><form onSubmit={submit} noValidate>{input({ id: 'email', label: 'Email Address', icon: Mail, type: 'email', placeholder: 'Enter your email address' })}{input({ id: 'password', label: 'Password', icon: Lock, isPassword: true, placeholder: 'Enter your password' })}{serverError && <p className="submit-error" role="alert">{serverError}</p>}<button className="signup-button" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Signing in…' : <><LogIn size={18} />Log in</>}</button><div className="signup__divider">OR</div><button className="signup-button signup-button--secondary" type="button"><GoogleIcon size={18} />Sign in with Google</button></form><p className="signup__footer">Don&apos;t have an account? <a href="/signup">Create one</a></p></>}</div></section></div></div>
 }

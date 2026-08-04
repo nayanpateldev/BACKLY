@@ -21,10 +21,19 @@ export const jwtDecodeSchema = z.object({
   }),
 });
 
+export const jwtVerifySchema = z.object({
+  body: z.object({
+    token: z.string().trim().min(1, "JWT token is required."),
+    secret: z.string().trim().min(1, "A signing secret is required."),
+  }),
+});
+
 export const jwtEncodeSchema = z.object({
   body: z
     .object({
       payload: z.record(z.any()),
+
+      header: z.record(z.any()).optional(),
 
       algorithm: z.enum([
         "HS256",
@@ -54,6 +63,16 @@ export const jwtEncodeSchema = z.object({
             code: z.ZodIssueCode.custom,
             path: ["secret"],
             message: "Secret is required for HMAC algorithms.",
+          });
+        }
+        const minimumSecretLength = { HS256: 32, HS384: 48, HS512: 64 }[
+          data.algorithm
+        ];
+        if (data.secret && data.secret.length < minimumSecretLength) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["secret"],
+            message: `${data.algorithm} requires a secret of at least ${minimumSecretLength} characters.`,
           });
         }
       } else {

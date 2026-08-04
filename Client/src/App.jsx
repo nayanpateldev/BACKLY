@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { NavLink, Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom'
 import './App.scss'
 import BACKLYLogo from './assets/BACKLY.webp'
 import ToolLibrary from './pages/ToolLibrary.jsx'
 import ToolPage from './pages/ToolPage.jsx'
 import Signup from './pages/Signup.jsx'
 import Login from './pages/Login.jsx'
+import authApi from './api/auth'
 
 const tools = [
   { id: 'url-shortner', name: 'URL Shortner', description: 'Create a short, shareable link for any destination URL.', icon: '↗', tag: 'Utility' },
@@ -58,6 +59,8 @@ function App() {
   const [query, setQuery] = useState('')
   const searchRef = useRef(null)
   const location = useLocation()
+  const navigate = useNavigate()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const filteredTools = tools.filter((tool) => matchesSearch(tool, query))
 
   useEffect(() => {
@@ -71,6 +74,19 @@ function App() {
     return () => window.removeEventListener('keydown', focusSearch)
   }, [])
 
+  const handleLogout = async () => {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    try {
+      await authApi.logout()
+    } catch {
+      // Clear the local session view even if an expired server session rejects logout.
+    } finally {
+      setIsLoggingOut(false)
+      navigate('/login', { replace: true })
+    }
+  }
+
   const currentToolId = location.pathname.startsWith('/tool/')
     ? location.pathname.replace('/tool/', '').split('/')[0]
     : null
@@ -78,7 +94,7 @@ function App() {
 
   function ToolPageRoute() {
     if (!activeToolMatchesQuery) {
-      return <Navigate to="/" replace />
+      return <Navigate to="/home" replace />
     }
     return <ToolPage tools={tools} />
   }
@@ -89,7 +105,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<div className="app-shell">
       <aside className="sidebar">
-        <NavLink className="brand brand-link" to="/">
+        <NavLink className="brand brand-link" to="/home">
           <span className="brand-mark">
             <img src={BACKLYLogo} alt="BACKLY logo" />
           </span>
@@ -97,7 +113,7 @@ function App() {
         </NavLink>
 
         <nav className="sidebar-nav" aria-label="Tools navigation">
-          <NavLink className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`} to="/" end>
+          <NavLink className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`} to="/home" end>
             <ToolIcon>⌂</ToolIcon>
             <span>Home</span>
           </NavLink>
@@ -136,14 +152,17 @@ function App() {
             />
             <kbd>⌘ K</kbd>
           </div>
-          <NavLink className="signup-link" to="/signup">Create account</NavLink>
+          <button className="signup-link logout-button" type="button" onClick={handleLogout} disabled={isLoggingOut}>
+            {isLoggingOut ? 'Logging out…' : 'Logout'}
+          </button>
         </header>
 
         <main className="main-content">
           <Routes location={location}>
-            <Route path="/" element={<ToolLibrary tools={filteredTools} query={query} />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<ToolLibrary tools={filteredTools} query={query} />} />
             <Route path="/tool/:toolId" element={<ToolPageRoute />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </main>
 

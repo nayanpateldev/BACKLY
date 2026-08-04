@@ -275,6 +275,16 @@
 .checkbox > p {
   color: $signup-danger;
 }
+.submit-error {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  color: $signup-danger;
+  border: 1px solid $signup-danger-soft;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.08);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
 .checkbox > div {
   display: flex;
   align-items: center;

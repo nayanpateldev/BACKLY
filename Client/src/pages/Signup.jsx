@@ -14,6 +14,8 @@ import {
 import toolbox from "../assets/toolbox.webp";
 import backlyLogo from "../assets/BACKLY.webp";
 import "./Signup.scss";
+import authApi from "../api/auth";
+import { useNavigate } from "react-router-dom";
 
 const initialValues = {
   fullName: "",
@@ -24,6 +26,7 @@ const initialValues = {
 };
 const namePattern = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
 function validateField(name, value, values = {}) {
   if (name === "fullName") {
@@ -215,12 +218,16 @@ function PromoPanel() {
 
 export default function Signup() {
   const [values, setValues] = useState(initialValues);
+  const [serverError, setServerError] = useState("");
   const [errors, setErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate();
+
   const update = (field) => (event) => {
     const value = event.target.value;
+    setServerError("");
     setValues((previous) => {
       const next = { ...previous, [field]: value };
       if (hasSubmitted)
@@ -229,33 +236,58 @@ export default function Signup() {
           [field]: validateField(field, value, next),
           ...(field === "password"
             ? {
-                confirmPassword: validateField(
-                  "confirmPassword",
-                  next.confirmPassword,
-                  next,
-                ),
-              }
+              confirmPassword: validateField(
+                "confirmPassword",
+                next.confirmPassword,
+                next,
+              ),
+            }
             : {}),
         }));
       return next;
     });
   };
-  const submit = (event) => {
+
+  const submit = async (event) => {
     event.preventDefault();
+
     setHasSubmitted(true);
+    setServerError("");
+
     const nextErrors = Object.fromEntries(
       Object.entries(values)
         .map(([key, value]) => [key, validateField(key, value, values)])
-        .filter(([, error]) => error),
+        .filter(([, error]) => error)
     );
+
     setErrors(nextErrors);
+
     if (Object.keys(nextErrors).length) return;
+
     setIsSubmitting(true);
-    window.setTimeout(() => {
-      setIsSubmitting(false);
+
+    try {
+
+      await authApi.signup({
+        fullName: values.fullName,
+        email: values.email,
+        password: values.password,
+      });
+
+      navigate("/");
       setSubmitted(true);
-    }, 1200);
+
+    } catch (error) {
+
+      setServerError(error.response?.data?.message || "");
+
+    } finally {
+
+      setIsSubmitting(false);
+
+    }
   };
+
   const input = (props) => (
     <InputField
       {...props}
@@ -325,6 +357,7 @@ export default function Signup() {
                         aria-checked={values.agreeToTerms}
                         onClick={() => {
                           const next = !values.agreeToTerms;
+                          setServerError("");
                           setValues((current) => ({
                             ...current,
                             agreeToTerms: next,
@@ -349,6 +382,11 @@ export default function Signup() {
                       <p>{errors.agreeToTerms}</p>
                     )}
                   </div>
+                  {serverError && (
+                    <p className="submit-error" role="alert">
+                      {serverError}
+                    </p>
+                  )}
                   <button
                     className="signup-button"
                     type="submit"

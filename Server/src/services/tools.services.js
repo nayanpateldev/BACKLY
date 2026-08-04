@@ -6,8 +6,19 @@ import commonPasswords from "../utils/commonPasswords.js";
 import jwt from "jsonwebtoken";
 import QRCode from "qrcode";
 import crypto from "crypto";
+import bcrypt from "bcrypt";
+import {
+  hash,
+  verify,
+  basicPayload,
+  saltPayload,
+  saltPepperPayload,
+} from "../utils/security.js";
 
 const toolServices = {
+  // ########################################
+  // ##########   URL Shortner     ##########
+  // ########################################
   // URL Shortner
   createShortUrl: async (urlData) => {
     const { userId, originalUrl, customAlias } = urlData;
@@ -19,9 +30,9 @@ const toolServices = {
     if (customAlias) {
       const alias = customAlias.trim();
 
-      if (!/^[a-zA-Z0-9_-]{3,50}$/.test(alias)) {
+      if (!/^[a-zA-Z0-9_-]{3,7}$/.test(alias)) {
         throw new Error(
-          "Custom alias must be 3-50 characters and can only contain letters, numbers, '-' and '_'.",
+          "Custom alias must be 3-7 characters and can only contain letters, numbers, '-' and '_'.",
         );
       }
     }
@@ -54,8 +65,8 @@ const toolServices = {
     return formatUrl(data);
   },
   // Redirects the Short URL
-  redirectUrl: async (req, res) => {
-    const { shortCode } = req.params;
+  redirectUrl: async (shortCode) => {
+    // const { shortCode } = req.params;
 
     const { data, error } = await supabase
       .from("urls")
@@ -115,6 +126,10 @@ const toolServices = {
 
     return formatUrl(data);
   },
+
+  // #############################################
+  // ##########   QR Code Generator     ##########
+  // #############################################
   // Generates a QR Code for a given URL
   generateUrlQr: async (req) => {
     const { url } = req.body;
@@ -147,6 +162,10 @@ const toolServices = {
       qr,
     };
   },
+
+  // ##############################################
+  // ##########   Password Generator     ##########
+  // ##############################################
   // Password Generator
   generatePassword: async (req) => {
     const { length, uppercase, lowercase, numbers, symbols } = req.body;
@@ -285,6 +304,10 @@ const toolServices = {
       feedback,
     };
   },
+
+  // ##########################################
+  // ##########   JWT     #####################
+  // ##########################################
   // JWT Secret Generator
   generateJwtSecret: async (req) => {
     const allowedBits = [128, 192, 256, 384, 512];
@@ -337,12 +360,24 @@ const toolServices = {
       payload: decoded.payload,
     };
   },
+  verifyJwt: async (req) => {
+    const { token, secret } = req.body;
+    const decoded = jwt.decode(token, { complete: true, json: true });
+
+    if (!decoded?.header?.alg || !["HS256", "HS384", "HS512"].includes(decoded.header.alg)) {
+      throw new Error("Only HMAC JWTs (HS256, HS384, HS512) can be verified with a secret.");
+    }
+
+    const payload = jwt.verify(token, secret, { algorithms: [decoded.header.alg] });
+    return { isValid: true, algorithm: decoded.header.alg, header: decoded.header, payload };
+  },
   // Jwt Encoder
   encodeJwt: async (req) => {
     const {
       payload,
       algorithm = "HS256",
       secret,
+      header,
       privateKey,
       expiresIn,
       issuer,
@@ -383,6 +418,16 @@ const toolServices = {
       algorithm,
     };
 
+    if (header) {
+      if (header.alg && header.alg !== algorithm) {
+        throw new Error("Header algorithm must match the selected algorithm.");
+      }
+      if (header.typ && header.typ !== "JWT") {
+        throw new Error("JWT header type must be 'JWT'.");
+      }
+      signOptions.header = header;
+    }
+
     if (expiresIn) signOptions.expiresIn = expiresIn;
     if (issuer) signOptions.issuer = issuer;
     if (audience) signOptions.audience = audience;
@@ -395,6 +440,83 @@ const toolServices = {
       algorithm,
       expiresIn: expiresIn || null,
       token,
+    };
+  },
+
+  // ##########################################
+  // ##########   Hasher     ##################
+  // ##########################################
+  // Basic Hash Generator
+  generateBasicHash: async (text, costFactor) => {
+    const payload = basicPayload(text);
+
+    const hashedValue = await hash(payload, costFactor);
+
+    return {
+      hash: hashedValue,
+      algorithm: "bcrypt",
+      method: "basic",
+      costFactor,
+    };
+  },
+  // Basic Hash Verifier
+  verifyBasicHash: async (text, hash) => {
+    const isValid = await verify(text, hash);
+
+    return {
+      isValid,
+      algorithm: "bcrypt",
+      method: "basic",
+    };
+  },
+  // Salt Hash Generator
+  generateSaltHash: async (text, salt, costFactor) => {
+    const payload = saltPayload(text, salt);
+
+    const hashedValue = await hash(payload, costFactor);
+
+    return {
+      hash: hashedValue,
+      algorithm: "bcrypt",
+      method: "salt",
+      costFactor,
+    };
+  },
+  // Salt Hash Verifier
+  verifySaltHash: async (text, salt, hashValue) => {
+    const payload = saltPayload(text, salt);
+
+    const isValid = await verify(payload, hashValue);
+
+    return {
+      isValid,
+      algorithm: "bcrypt",
+      method: "salt",
+    };
+  },
+  // Salt + Pepper Hash Generator
+  generateSaltPepperHash: async (text, salt, costFactor) => {
+    const payload = saltPepperPayload(text, salt);
+
+    const hashedValue = await hash(payload, costFactor);
+
+    return {
+      hash: hashedValue,
+      algorithm: "bcrypt",
+      method: "salt-pepper",
+      costFactor,
+    };
+  },
+  // Salt + Pepper Hash Verifier
+  verifySaltPepperHash: async (text, salt, hashValue) => {
+    const payload = saltPepperPayload(text, salt);
+
+    const isValid = await verify(payload, hashValue);
+
+    return {
+      isValid,
+      algorithm: "bcrypt",
+      method: "salt-pepper",
     };
   },
   pasteBin: async () => {},

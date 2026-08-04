@@ -1,0 +1,5 @@
+export const BCRYPT = {
+  MIN_COST_FACTOR: 4,
+  MAX_COST_FACTOR: 19,
+  DEFAULT_COST_FACTOR: 12,
+};

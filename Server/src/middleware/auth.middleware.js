@@ -3,15 +3,18 @@ import { supabase } from "../config/supabase.js";
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+    const cookieToken = req.cookies?.accessToken;
+    const token = bearerToken || cookieToken;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!token) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
       });
     }
-
-    const token = authHeader.split(" ")[1];
 
     const {
       data: { user },
