@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   NavLink,
   Routes,
@@ -147,29 +147,9 @@ function ToolIcon({ children }) {
   );
 }
 
-function matchesSearch(tool, query) {
-  const trimmed = query.trim().toLowerCase();
-  if (!trimmed) return true;
-
-  const searchable =
-    `${tool.name} ${tool.description} ${tool.tag}`.toLowerCase();
-  const queryTerms = trimmed.split(/\s+/);
-  return queryTerms.every((term) => {
-    if (term.length === 1) {
-      return searchable
-        .split(/[^a-z0-9]+/)
-        .some((token) => token.startsWith(term));
-    }
-    return searchable.includes(term);
-  });
-}
 
 function AppLayout({
   children,
-  searchRef,
-  query,
-  setQuery,
-  filteredTools,
   handleLogout,
   isLoggingOut,
 }) {
@@ -195,7 +175,7 @@ function AppLayout({
             <span>Home</span>
           </NavLink>
           <p className="nav-label">TOOLS</p>
-          {filteredTools.map((tool) => (
+          {tools.map((tool) => (
             <NavLink
               className={({ isActive }) =>
                 `nav-item ${isActive ? "is-active" : ""}`
@@ -222,17 +202,7 @@ function AppLayout({
             <p className="eyebrow">DEVELOPER WORKSPACE</p>
             <h1>Backend Training :)</h1>
           </div>
-          <div className="header-search">
-            <span aria-hidden="true">⌕</span>
-            <input
-              ref={searchRef}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search tools..."
-              aria-label="Search tools"
-            />
-            <kbd>⌘ K</kbd>
-          </div>
+
           <button
             className="signup-link logout-button"
             type="button"
@@ -252,24 +222,10 @@ function AppLayout({
 }
 
 function App() {
-  const [query, setQuery] = useState("");
-  const searchRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const filteredTools = tools.filter((tool) => matchesSearch(tool, query));
-
-  useEffect(() => {
-    const focusSearch = (event) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        searchRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", focusSearch);
-    return () => window.removeEventListener("keydown", focusSearch);
-  }, []);
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -287,12 +243,12 @@ function App() {
   const currentToolId = location.pathname.startsWith("/tool/")
     ? location.pathname.replace("/tool/", "").split("/")[0]
     : null;
-  const activeToolMatchesQuery = currentToolId
-    ? filteredTools.some((tool) => tool.id === currentToolId)
+  const toolExists = currentToolId
+    ? tools.some((tool) => tool.id === currentToolId)
     : true;
 
   function ToolPageRoute() {
-    if (!activeToolMatchesQuery) {
+    if (!toolExists) {
       return <Navigate to="/home" replace />;
     }
     return <ToolPage tools={tools} />;
@@ -321,14 +277,10 @@ function App() {
         element={
           <ProtectedRoute>
             <AppLayout
-              searchRef={searchRef}
-              query={query}
-              setQuery={setQuery}
-              filteredTools={filteredTools}
               handleLogout={handleLogout}
               isLoggingOut={isLoggingOut}
             >
-              <ToolLibrary tools={filteredTools} query={query} />
+              <ToolLibrary tools={tools} />
             </AppLayout>
           </ProtectedRoute>
         }
@@ -338,10 +290,6 @@ function App() {
         element={
           <ProtectedRoute>
             <AppLayout
-              searchRef={searchRef}
-              query={query}
-              setQuery={setQuery}
-              filteredTools={filteredTools}
               handleLogout={handleLogout}
               isLoggingOut={isLoggingOut}
             >

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-function ToolLibrary({ tools, query }) {
+function ToolLibrary({ tools }) {
   return (
     <section className="tool-library">
       <div className="page-intro">
@@ -24,9 +24,6 @@ function ToolLibrary({ tools, query }) {
             <span className="arrow">→</span>
           </Link>
         ))}
-        {tools.length === 0 && (
-          <div className="empty-state">No tools found for “{query}”.</div>
-        )}
       </div>
     </section>
   )
