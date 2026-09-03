@@ -89,7 +89,7 @@ const tools = [
             fill="#c4b5fd"
           />
           <path
-            d="M16.0761 16.6173C16 16.8011 16 17.0341 16 17.5C16 17.9659 16 18.1989 16.0761 18.3827C16.1776 18.6277 16.3723 18.8224 16.6173 18.9239C16.8011 19 17.0341 19 17.5 19C17.9659 19 18.1989 19 18.3827 18.9239C18.6277 18.8224 18.8224 18.6277 18.9239 18.3827C19 18.1989 19 17.9659 19 17.5C19 17.0341 19 16.8011 18.9239 16.6173C18.8224 16.3723 18.6277 16.1776 18.3827 16.0761C18.1989 16 17.9659 16 17.5 16C17.0341 16 16.8011 16 16.6173 16.0761C16.3723 16.1776 16.1776 16.3723 16.0761 16.6173Z"
+            d="M16.0761 16.6173C16 16.8011 16 17.0341 16 17.5C16 17.9659 16 18.1989 16.0761 18.3827C16.1776 18.6277 16.3723 18.8224 16.6173 18.9239C16.8011 19 17.0341 19 17.5 19C17.9659 19 18.1989 19 18.3827 18.9239C18.6277 18.8224 18.8224 18.6277 18.9239 18.3827C19 18.1989 19 17.9659 19 17.5C19 17.0341 19 16.8011 18.9239 16.6173C18.8224 16.3723 16.1776 16.3723 16.0761 16.6173Z"
             fill="#c4b5fd"
           />
         </g>
@@ -164,6 +164,93 @@ function matchesSearch(tool, query) {
   });
 }
 
+function AppLayout({
+  children,
+  searchRef,
+  query,
+  setQuery,
+  filteredTools,
+  handleLogout,
+  isLoggingOut,
+}) {
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <NavLink className="brand brand-link" to="/home">
+          <span className="brand-mark">
+            <img src={BACKLYLogo} alt="BACKLY logo" />
+          </span>
+          <span>BACKLY</span>
+        </NavLink>
+
+        <nav className="sidebar-nav" aria-label="Tools navigation">
+          <NavLink
+            className={({ isActive }) =>
+              `nav-item ${isActive ? "is-active" : ""}`
+            }
+            to="/home"
+            end
+          >
+            <ToolIcon>⌂</ToolIcon>
+            <span>Home</span>
+          </NavLink>
+          <p className="nav-label">TOOLS</p>
+          {filteredTools.map((tool) => (
+            <NavLink
+              className={({ isActive }) =>
+                `nav-item ${isActive ? "is-active" : ""}`
+              }
+              key={tool.id}
+              to={`/tool/${tool.id}`}
+            >
+              <ToolIcon>{tool.icon}</ToolIcon>
+              <span>{tool.name}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <span>
+            Made with efforts by <strong>Nayan Patel</strong>💜
+          </span>
+        </div>
+      </aside>
+
+      <div className="content-shell">
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">DEVELOPER WORKSPACE</p>
+            <h1>Backend Training :)</h1>
+          </div>
+          <div className="header-search">
+            <span aria-hidden="true">⌕</span>
+            <input
+              ref={searchRef}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search tools..."
+              aria-label="Search tools"
+            />
+            <kbd>⌘ K</kbd>
+          </div>
+          <button
+            className="signup-link logout-button"
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? "Logging out…" : "Logout"}
+          </button>
+        </header>
+
+        <main className="main-content">{children}</main>
+
+        <footer>© 2026 BACKLY. All Rights Reserved.</footer>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [query, setQuery] = useState("");
   const searchRef = useRef(null);
@@ -230,6 +317,40 @@ function App() {
         }
       />
       <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <AppLayout
+              searchRef={searchRef}
+              query={query}
+              setQuery={setQuery}
+              filteredTools={filteredTools}
+              handleLogout={handleLogout}
+              isLoggingOut={isLoggingOut}
+            >
+              <ToolLibrary tools={filteredTools} query={query} />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tool/:toolId"
+        element={
+          <ProtectedRoute>
+            <AppLayout
+              searchRef={searchRef}
+              query={query}
+              setQuery={setQuery}
+              filteredTools={filteredTools}
+              handleLogout={handleLogout}
+              isLoggingOut={isLoggingOut}
+            >
+              <ToolPageRoute />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/"
         element={
           <ProtectedRoute>
@@ -240,98 +361,7 @@ function App() {
       <Route path="/r/:shortCode" element={<RedirectHandler />} />
       <Route path="/s/:shortCode" element={<RedirectHandler />} />
       <Route path="/:shortCode" element={<RedirectHandler />} />
-      <Route
-        path="*"
-        element={
-          <ProtectedRoute>
-            <div className="app-shell">
-              <aside className="sidebar">
-                <NavLink className="brand brand-link" to="/home">
-                  <span className="brand-mark">
-                    <img src={BACKLYLogo} alt="BACKLY logo" />
-                  </span>
-                  <span>BACKLY</span>
-                </NavLink>
-
-                <nav className="sidebar-nav" aria-label="Tools navigation">
-                  <NavLink
-                    className={({ isActive }) =>
-                      `nav-item ${isActive ? "is-active" : ""}`
-                    }
-                    to="/home"
-                    end
-                  >
-                    <ToolIcon>⌂</ToolIcon>
-                    <span>Home</span>
-                  </NavLink>
-                  <p className="nav-label">TOOLS</p>
-                  {filteredTools.map((tool) => (
-                    <NavLink
-                      className={({ isActive }) =>
-                        `nav-item ${isActive ? "is-active" : ""}`
-                      }
-                      key={tool.id}
-                      to={`/tool/${tool.id}`}
-                    >
-                      <ToolIcon>{tool.icon}</ToolIcon>
-                      <span>{tool.name}</span>
-                    </NavLink>
-                  ))}
-                </nav>
-
-                <div className="sidebar-bottom">
-                  <span>
-                    Made with efforts by <strong>Nayan Patel</strong>💜
-                  </span>
-                </div>
-              </aside>
-
-              <div className="content-shell">
-                <header className="topbar">
-                  <div>
-                    <p className="eyebrow">DEVELOPER WORKSPACE</p>
-                    <h1>Backend Training :)</h1>
-                  </div>
-                  <div className="header-search">
-                    <span aria-hidden="true">⌕</span>
-                    <input
-                      ref={searchRef}
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Search tools..."
-                      aria-label="Search tools"
-                    />
-                    <kbd>⌘ K</kbd>
-                  </div>
-                  <button
-                    className="signup-link logout-button"
-                    type="button"
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                  >
-                    {isLoggingOut ? "Logging out…" : "Logout"}
-                  </button>
-                </header>
-
-                <main className="main-content">
-                  <Routes location={location}>
-                    <Route
-                      path="/home"
-                      element={
-                        <ToolLibrary tools={filteredTools} query={query} />
-                      }
-                    />
-                    <Route path="/tool/:toolId" element={<ToolPageRoute />} />
-                    <Route path="*" element={<Navigate to="/home" replace />} />
-                  </Routes>
-                </main>
-
-                <footer>© 2026 BACKLY. All Rights Reserved.</footer>
-              </div>
-            </div>
-          </ProtectedRoute>
-        }
-      />
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 }
