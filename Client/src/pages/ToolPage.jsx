@@ -591,7 +591,7 @@ function ToolPage({ tools }) {
                 className={authMode === 'jwt' ? 'authkit-mode-button active' : 'authkit-mode-button'}
                 onClick={() => setAuthMode('jwt')}
               >
-                JWT
+                JWT <span className="beta-badge">Beta</span>
               </button>
             </div>
 
@@ -751,7 +751,7 @@ function ToolPage({ tools }) {
                     <button type="button" className={hashAction === 'verify' ? 'active' : ''} onClick={() => { setHashAction('verify'); setHashResult(null) }}>Verify</button>
                   </div>
                   <label className="hasher-field" htmlFor="hasher-text"><span>{hashAction === 'generate' ? 'Text or password' : 'Original text or password'}</span><div className="hasher-secret-input"><input id="hasher-text" type={showHashText ? 'text' : 'password'} value={hashText} onChange={updateHashField(setHashText)} placeholder="Enter text..." /><button type="button" onClick={() => setShowHashText((value) => !value)} aria-label={showHashText ? 'Hide text' : 'Show text'}>{showHashText ? <EyeOff size={18} /> : <Eye size={18} />}</button></div></label>
-                  {hashMethod !== 'basic' && <div className="hasher-salt-section"><label className="hasher-field" htmlFor="hasher-salt"><span>Salt</span><input id="hasher-salt" value={hashSalt} onChange={updateHashField(setHashSalt)} placeholder="Secure random salt" /></label><label className="hasher-field hasher-range-field" htmlFor="hasher-salt-length"><span>Salt length <b>{hashSaltLength}</b></span><input id="hasher-salt-length" type="range" min="8" max="64" value={hashSaltLength} onChange={(event) => { const length = Number(event.target.value); setHashSaltLength(length); generateRandomSalt(length) }} /><small>8 <i>{hashSaltLength} characters</i> 64</small></label></div>}
+                  {hashMethod !== 'basic' && <div className="hasher-salt-section"><label className="hasher-field" htmlFor="hasher-salt"><span>Salt</span><input id="hasher-salt" value={hashSalt} onChange={updateHashField(setHashSalt)} placeholder="Secure random salt" /></label>{hashAction === 'generate' && <label className="hasher-field hasher-range-field" htmlFor="hasher-salt-length"><span>Salt length <b>{hashSaltLength}</b></span><input id="hasher-salt-length" type="range" min="8" max="64" value={hashSaltLength} onChange={(event) => { const length = Number(event.target.value); setHashSaltLength(length); generateRandomSalt(length) }} /><small>8 <i>{hashSaltLength} characters</i> 64</small></label>}</div>}
                   {hashAction === 'generate' ? <label className="hasher-field hasher-range-field" htmlFor="hasher-cost"><span>Salt rounds <b>{hashCostFactor}</b></span><input id="hasher-cost" type="range" min="4" max="19" value={hashCostFactor} onChange={(event) => setHashCostFactor(Number(event.target.value))} /><small>4 <i>{hashCostFactor} rounds</i> 19</small></label> : <label className="hasher-field" htmlFor="hasher-hash"><span>Bcrypt hash to verify</span><textarea id="hasher-hash" value={hashValue} onChange={updateHashField(setHashValue)} placeholder="$2b$10$..." /></label>}
                   <button type="button" className="hasher-submit" onClick={handleHasher} disabled={hashLoading}>{hashLoading ? <LoaderCircle className="authkit-spinner" size={18} /> : <Hash size={18} />}{hashLoading ? 'Processing…' : hashAction === 'generate' ? 'Generate Hash' : 'Verify Hash'}</button>
                   {hashError && <p className="hasher-error" role="alert">{hashError}</p>}
