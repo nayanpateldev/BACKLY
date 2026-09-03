@@ -15,14 +15,14 @@ const authControllers = {
       res.cookie("accessToken", result.session.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: result.session.expiresIn * 1000,
       });
 
       res.cookie("refreshToken", result.session.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
 
@@ -47,14 +47,14 @@ const authControllers = {
       res.cookie("accessToken", authData.session.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: authData.session.expiresIn * 1000,
       });
 
       res.cookie("refreshToken", authData.session.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
 
@@ -110,13 +110,13 @@ const authControllers = {
       res.clearCookie("accessToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       });
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       });
       logs(`${METHODS.POST}${ENDPOINTS.LOGOUT} - Request Ended`);
 
