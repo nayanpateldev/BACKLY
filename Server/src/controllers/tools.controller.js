@@ -30,7 +30,11 @@ const toolControllers = {
     try {
       const { shortCode } = req.params;
       const url = await toolServices.redirectUrl(shortCode);
-      return res.redirect(302, url.originalUrl);
+      let targetUrl = url.originalUrl;
+      if (targetUrl && !/^https?:\/\//i.test(targetUrl)) {
+        targetUrl = `https://${targetUrl}`;
+      }
+      return res.redirect(302, targetUrl);
     } catch (error) {
       return errorResponse(res, 500, error.message);
     }

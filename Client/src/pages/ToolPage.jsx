@@ -503,7 +503,7 @@ function ToolPage({ tools }) {
                 <div className="short-url-details">
                   <div><span>Original URL</span><strong>{result.originalUrl}</strong></div>
                   <div><span>Status</span><strong className={result.isActive === false ? 'url-status inactive' : 'url-status'}>{result.isActive === false ? 'Inactive' : 'Active'}</strong></div>
-                  <div><span>Alias</span><strong>{result.customAlias || result.shortCode}</strong></div>
+                  <div><span>Alias</span><strong>{result.customAlias || '-'}</strong></div>
                   <div><span>Expires</span><strong>{result.expiresAt || 'Never'}</strong></div>
                 </div>
               </div>
@@ -544,7 +544,7 @@ function ToolPage({ tools }) {
                             {item.shortUrl}
                           </a>
                         </td>
-                        <td data-label="Custom alias">{item.customAlias || item.shortCode}</td>
+                        <td data-label="Custom alias">{item.customAlias || '-'}</td>
                         <td data-label="Created">{formatDate(item.createdAt)}</td>
                         <td data-label="Actions">
                           <button type="button" className="row-action" onClick={() => window.open(item.shortUrl, '_blank')}>

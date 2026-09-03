@@ -15,6 +15,7 @@ import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
+import RedirectHandler from "./components/RedirectHandler.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 
 const tools = [
@@ -236,6 +237,9 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/r/:shortCode" element={<RedirectHandler />} />
+      <Route path="/s/:shortCode" element={<RedirectHandler />} />
+      <Route path="/:shortCode" element={<RedirectHandler />} />
       <Route
         path="*"
         element={

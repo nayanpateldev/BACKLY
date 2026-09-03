@@ -17,14 +17,14 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.BASE_URL,
     credentials: true,
   })
 );
 
 app.use(express.json());
 
-app.get("/", (req, res) => 
+app.get("/", (req, res) =>
 {
   res.status(200).json({
     success: true,

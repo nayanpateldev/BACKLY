@@ -66,13 +66,11 @@ const toolServices = {
   },
   // Redirects the Short URL
   redirectUrl: async (shortCode) => {
-    // const { shortCode } = req.params;
-
     const { data, error } = await supabase
       .from("urls")
       .select("*")
-      .eq("short_code", shortCode)
-      .single();
+      .or(`short_code.eq.${shortCode},custom_alias.eq.${shortCode}`)
+      .maybeSingle();
 
     if (error || !data) {
       throw new Error("Short URL not found");
@@ -82,7 +80,7 @@ const toolServices = {
     await supabase
       .from("urls")
       .update({
-        clicks: data.clicks + 1,
+        clicks: (data.clicks || 0) + 1,
       })
       .eq("id", data.id);
 
