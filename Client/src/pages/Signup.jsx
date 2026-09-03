@@ -15,7 +15,8 @@ import toolbox from "../assets/toolbox.webp";
 import backlyLogo from "../assets/BACKLY.webp";
 import "./Signup.scss";
 import authApi from "../api/auth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const initialValues = {
   fullName: "",
@@ -224,6 +225,7 @@ export default function Signup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const update = (field) => (event) => {
     const value = event.target.value;
@@ -268,14 +270,15 @@ export default function Signup() {
 
     try {
 
-      await authApi.signup({
+      const res = await authApi.signup({
         fullName: values.fullName,
         email: values.email,
         password: values.password,
       });
 
-      navigate("/");
+      await login(res?.data?.data);
       setSubmitted(true);
+      navigate("/home");
 
     } catch (error) {
 
@@ -411,7 +414,7 @@ export default function Signup() {
                   </button>
                 </form>
                 <p className="signup__footer">
-                  Already have an account? <a href="/login">Log in</a>
+                  Already have an account? <Link to="/login">Log in</Link>
                 </p>
               </>
             )}

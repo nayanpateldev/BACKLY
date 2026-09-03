@@ -5,6 +5,7 @@ import backlyLogo from '../assets/BACKLY.webp'
 import './Signup.scss'
 import authApi from '../api/auth'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const initialValues = { email: '', password: '' }
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -40,15 +41,6 @@ function BacklyLogo() {
   return <div className="signup-logo"><img src={backlyLogo} alt="" /><span>BACKLY</span></div>
 }
 
-function GoogleIcon({ size = 18 }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-    <path fill="#4285F4" d="M21.6 12.23c0-.79-.07-1.54-.2-2.27H12v4.3h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.55Z" />
-    <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.43l-3.24-2.5c-.9.6-2.04.96-3.38.96-2.6 0-4.8-1.75-5.59-4.1H3.07v2.58A10 10 0 0 0 12 22Z" />
-    <path fill="#FBBC05" d="M6.41 13.93A6 6 0 0 1 6.41 10.07V7.49H3.07a10 10 0 0 0 0 12.88l3.34-2.44Z" />
-    <path fill="#EA4335" d="M12 6.06c1.47 0 2.79.5 3.83 1.49l2.87-2.87A9.96 9.96 0 0 0 12 2a10 10 0 0 0-8.93 5.49l3.34 2.44C7.2 7.81 9.4 6.06 12 6.06Z" />
-  </svg>
-}
-
 function PromoPanel() {
   return <section className="promo-panel">
     <BacklyLogo />
@@ -74,6 +66,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const update = (field) => (event) => {
     const value = event.target.value
@@ -98,11 +91,12 @@ export default function Login() {
     setIsSubmitting(true)
 
     try {
-      await authApi.login({
+      const res = await authApi.login({
         email: values.email.trim(),
         password: values.password,
       })
 
+      await login(res?.data?.data)
       setIsSubmitting(false)
       setSubmitted(true)
       navigate('/home')
@@ -115,5 +109,5 @@ export default function Login() {
 
   const input = (props) => <InputField {...props} value={values[props.id]} onChange={update(props.id)} error={hasSubmitted ? errors[props.id] : ''} />
 
-  return <div className="signup-page"><div className="signup"><PromoPanel /><section className="signup__panel"><div className="signup__card">{submitted ? <div className="signup__success"><span><LogIn size={28} /></span><h2>Welcome back</h2><p>You’re signed in and ready to continue.</p></div> : <><header><h2>Welcome back</h2><p>Sign in to your BACKLY workspace.</p></header><form onSubmit={submit} noValidate>{input({ id: 'email', label: 'Email Address', icon: Mail, type: 'email', placeholder: 'Enter your email address' })}{input({ id: 'password', label: 'Password', icon: Lock, isPassword: true, placeholder: 'Enter your password' })}{serverError && <p className="submit-error" role="alert">{serverError}</p>}<button className="signup-button" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Signing in…' : <><LogIn size={18} />Log in</>}</button><div className="signup__divider">OR</div><button className="signup-button signup-button--secondary" type="button"><GoogleIcon size={18} />Sign in with Google</button></form><p className="signup__footer">Don&apos;t have an account? <a href="/signup">Create one</a></p></>}</div></section></div></div>
+  return <div className="signup-page"><div className="signup"><PromoPanel /><section className="signup__panel"><div className="signup__card">{submitted ? <div className="signup__success"><span><LogIn size={28} /></span><h2>Welcome back</h2><p>You’re signed in and ready to continue.</p></div> : <><header><h2>Welcome back</h2><p>Sign in to your BACKLY workspace.</p></header><form onSubmit={submit} noValidate>{input({ id: 'email', label: 'Email Address', icon: Mail, type: 'email', placeholder: 'Enter your email address' })}{input({ id: 'password', label: 'Password', icon: Lock, isPassword: true, placeholder: 'Enter your password' })}{serverError && <p className="submit-error" role="alert">{serverError}</p>}<button className="signup-button" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Signing in…' : <><LogIn size={18} />Log in</>}</button></form></>}</div></section></div></div>
 }
