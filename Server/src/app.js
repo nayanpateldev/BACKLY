@@ -27,7 +27,7 @@ app.get("/", (req, res) =>
 {
   res.status(200).json({
     success: true,
-    message: `Server is running on Port: ${process.env.PORT}`
+    message: "🚀 Server running fine"
   })
 })
 
